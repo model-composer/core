@@ -1,0 +1,19 @@
+{
+    "name": "model/core",
+    "description": "ModEl Framework core",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Domenico Giambra",
+            "email": "zorinik@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {"Model\\Core\\": "src/"}
+    },
+    "require": {
+        "php": "^8.0",
+        "composer-runtime-api": "^2.1",
+        "model/config": "^0.4.0"
+    }
+}
