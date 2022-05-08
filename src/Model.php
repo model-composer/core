@@ -3,7 +3,7 @@
 use Composer\InstalledVersions;
 use Model\Config\Config;
 
-class Core
+class Model
 {
 	public static function init(): void
 	{
