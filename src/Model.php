@@ -57,6 +57,7 @@ class Model
 			return [
 				'name' => defined('APP_NAME') ? APP_NAME : '',
 				'path' => defined('PATH') ? PATH : '/',
+				'debug' => defined('MAIN_DEBUG_MODE') and (bool)MAIN_DEBUG_MODE,
 			];
 		});
 	}
