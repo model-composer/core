@@ -19,11 +19,9 @@ class Model
 		Config::loadEnv();
 
 		$config = self::getConfig();
-		if (!defined('APP_NAME'))
-			define('APP_NAME', $config['name']);
-		if (!defined('PATH'))
-			define('PATH', $config['path']);
 
+		define('APP_NAME', $config['name']);
+		define('PATH', $config['path']);
 		define('PATHBASE', substr(INCLUDE_PATH, 0, -strlen(PATH)));
 
 		if (isset($_COOKIE['ZKADMIN']) and $_COOKIE['ZKADMIN'] == '69')
