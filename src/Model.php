@@ -12,7 +12,9 @@ class Model
 		if (self::$initialized)
 			return;
 
-		DEFINE('START_TIME', microtime(true));
+		define('START_TIME', microtime(true));
+
+		define('INCLUDE_PATH', realpath(dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..') . DIRECTORY_SEPARATOR);
 
 		Config::loadEnv();
 
@@ -22,7 +24,6 @@ class Model
 		if (!defined('PATH'))
 			define('PATH', $config['path']);
 
-		define('INCLUDE_PATH', realpath(dirname(__FILE__) . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . '..') . DIRECTORY_SEPARATOR);
 		define('PATHBASE', substr(INCLUDE_PATH, 0, -strlen(PATH)));
 
 		if (isset($_COOKIE['ZKADMIN']) and $_COOKIE['ZKADMIN'] == '69')
