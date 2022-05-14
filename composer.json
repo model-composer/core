@@ -14,6 +14,7 @@
     "require": {
         "php": "^8.0",
         "composer-runtime-api": "^2.1",
+        "ext-mbstring": "*",
         "model/config": "^0.4.0"
     }
 }

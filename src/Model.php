@@ -41,6 +41,11 @@ class Model
 		if (!defined('BASE_HOST'))
 			define('BASE_HOST', (HTTPS ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? ''));
 
+		error_reporting(E_ALL);
+		ini_set('display_errors', DEBUG_MODE);
+
+		mb_internal_encoding('utf-8');
+
 		self::$initialized = true;
 	}
 
