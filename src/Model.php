@@ -58,14 +58,16 @@ class Model
 	public static function getConfig(): array
 	{
 		return Config::get('core', [
-			'version' => '0.2.0',
-			'migration' => function () {
-				return [
-					'name' => defined('APP_NAME') ? APP_NAME : '',
-					'path' => defined('PATH') ? PATH : '/',
-					'debug' => defined('MAIN_DEBUG_MODE') and (bool)MAIN_DEBUG_MODE,
-				];
-			},
+			[
+				'version' => '0.2.0',
+				'migration' => function () {
+					return [
+						'name' => defined('APP_NAME') ? APP_NAME : '',
+						'path' => defined('PATH') ? PATH : '/',
+						'debug' => defined('MAIN_DEBUG_MODE') and (bool)MAIN_DEBUG_MODE,
+					];
+				},
+			],
 		]);
 	}
 }
