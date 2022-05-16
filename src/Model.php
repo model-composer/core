@@ -31,12 +31,10 @@ class Model
 
 		define('ZK_LOADING_ID', substr(md5(microtime()), 0, 16));
 
-		if (!defined('HTTPS')) {
-			if ((!empty($_SERVER['HTTPS']) and $_SERVER['HTTPS'] !== 'off') or ($_SERVER['SERVER_PORT'] ?? null) == 443)
-				define('HTTPS', 1);
-			else
-				define('HTTPS', 0);
-		}
+		if ((!empty($_SERVER['HTTPS']) and $_SERVER['HTTPS'] !== 'off') or ($_SERVER['SERVER_PORT'] ?? null) == 443)
+			define('HTTPS', 1);
+		else
+			define('HTTPS', $config['force_https']);
 
 		if (!defined('BASE_HOST'))
 			define('BASE_HOST', (HTTPS ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? ''));
@@ -46,6 +44,28 @@ class Model
 
 		mb_internal_encoding('utf-8');
 
+		if (!self::isCLI()) {
+			if (
+				$config['force_www']
+				and !str_starts_with($_SERVER['HTTP_HOST'], 'www.')
+				and !str_starts_with($_SERVER['HTTP_HOST'], 'localhost')
+				and !str_starts_with($_SERVER['HTTP_HOST'], '127.0.0.1')
+				and !str_starts_with($_SERVER['HTTP_USER_AGENT'] ?? '', 'curl')
+			) {
+				header('Location: http' . (HTTPS ? 's' : '') . '://www.' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+				exit;
+			}
+
+			header('Content-type: text/html; charset=utf-8');
+			setcookie('ZK', PATH, time() + (60 * 60 * 24 * 365), PATH);
+		}
+
+		if (DEBUG_MODE and function_exists('opcache_reset'))
+			opcache_reset();
+
+		if (!isset($_SESSION))
+			$_SESSION = [];
+
 		self::$initialized = true;
 	}
 
@@ -53,6 +73,16 @@ class Model
 	{
 		if (InstalledVersions::isInstalled('model/cache'))
 			\Model\Cache\Cache::invalidate();
+	}
+
+	/**
+	 * Returns true if executed via CLI, false otherwise
+	 *
+	 * @return bool
+	 */
+	public static function isCLI(): bool
+	{
+		return (php_sapi_name() == "cli");
 	}
 
 	public static function getConfig(): array
@@ -69,6 +99,14 @@ class Model
 						'path' => defined('PATH') ? PATH : '/',
 						'debug' => defined('MAIN_DEBUG_MODE') and (bool)MAIN_DEBUG_MODE,
 					];
+				},
+			],
+			[
+				'version' => '0.2.3',
+				'migration' => function (array $config, string $env) {
+					$config['force_https'] = defined('HTTPS') && (bool)HTTPS;
+					$config['force_www'] = defined('FORCE_WWW') && (bool)FORCE_WWW;
+					return $config;
 				},
 			],
 		]);
