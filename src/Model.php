@@ -60,7 +60,10 @@ class Model
 		return Config::get('core', [
 			[
 				'version' => '0.2.0',
-				'migration' => function () {
+				'migration' => function (array $config, string $env) {
+					if ($config) // Already existing
+						return $config;
+
 					return [
 						'name' => defined('APP_NAME') ? APP_NAME : '',
 						'path' => defined('PATH') ? PATH : '/',
