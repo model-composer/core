@@ -6,6 +6,7 @@ use Model\Config\Config;
 class Model
 {
 	private static bool $initialized = false;
+	private static array $inputVarsCache;
 
 	public static function init(): void
 	{
@@ -73,6 +74,51 @@ class Model
 	{
 		if (InstalledVersions::isInstalled('model/cache'))
 			\Model\Cache\Cache::invalidate();
+	}
+
+	/**
+	 * Return post (or CLI) payload
+	 *
+	 * @return array|null
+	 */
+	public static function getInput(): ?array
+	{
+		if (self::isCLI()) {
+			if (!isset(self::$inputVarsCache)) {
+				self::$inputVarsCache = [];
+
+				global $argv;
+
+				if (is_array($argv) and count($argv) > 2) {
+					$arr = $argv;
+					unset($arr[0]); // Script name
+					unset($arr[1]); // Main request (accessible via getRequest method)
+
+					foreach ($arr as $input) {
+						$input = explode('=', $input);
+						if (count($input) === 2)
+							self::$inputVarsCache[$input[0]] = $input[1];
+					}
+				}
+			}
+
+			return self::$inputVarsCache;
+		} else {
+			$headers = getallheaders();
+			if (!empty($headers['Content-Type']) and in_array($headers['Content-Type'], ['application/json', 'text/json'])) {
+				$payload = file_get_contents('php://input');
+				if (empty($payload))
+					$payload = '{}';
+
+				return json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
+			} else {
+				$mp = new \Djiele\Http\MultipartHandler();
+				if ($mp->getBoundary())
+					$mp->populateGlobals();
+
+				return $_REQUEST;
+			}
+		}
 	}
 
 	/**
