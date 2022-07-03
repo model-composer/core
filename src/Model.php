@@ -104,8 +104,8 @@ class Model
 
 			return self::$inputVarsCache;
 		} else {
-			$headers = getallheaders();
-			if (!empty($headers['Content-Type']) and in_array($headers['Content-Type'], ['application/json', 'text/json'])) {
+			$contentType = self::getRequestContentType();
+			if ($contentType and in_array($contentType, ['application/json', 'text/json'])) {
 				$payload = file_get_contents('php://input');
 				if (empty($payload))
 					$payload = '{}';
@@ -121,6 +121,20 @@ class Model
 				}
 			}
 		}
+	}
+
+	/**
+	 * @return string|null
+	 */
+	private static function getRequestContentType(): ?string
+	{
+		$headers = getallheaders();
+		foreach ($headers as $k => $v) {
+			if (mb_strtolower($k) === 'content-type')
+				return $v;
+		}
+
+		return null;
 	}
 
 	/**
