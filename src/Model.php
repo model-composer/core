@@ -112,13 +112,7 @@ class Model
 
 				return json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
 			} else {
-				$mp = @(new \Djiele\Http\MultipartHandler());
-				if ($mp->getBoundary()) {
-					$mp->populateGlobals();
-					return json_decode($_POST['body'] ?? '{}', true, 512, JSON_THROW_ON_ERROR);
-				} else {
-					return $_REQUEST;
-				}
+				return $_REQUEST;
 			}
 		}
 	}
