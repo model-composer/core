@@ -74,6 +74,8 @@ class Model
 	{
 		if (InstalledVersions::isInstalled('model/cache'))
 			\Model\Cache\Cache::invalidate();
+		if (InstalledVersions::isInstalled('model/db'))
+			\Model\Db\Db::migrate();
 	}
 
 	/**
