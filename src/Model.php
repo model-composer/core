@@ -1,6 +1,7 @@
 <?php namespace Model\Core;
 
 use Composer\InstalledVersions;
+use MJS\TopSort\Implementations\StringSort;
 use Model\Config\Config;
 
 class Model
@@ -70,12 +71,56 @@ class Model
 		self::$initialized = true;
 	}
 
-	public static function cleanUp(): void
+	public static function realign(): void
 	{
-		if (InstalledVersions::isInstalled('model/cache'))
-			\Model\Cache\Cache::invalidate();
-		if (InstalledVersions::isInstalled('model/db'))
-			\Model\Db\Db::migrate();
+		// First, I look for all the "model/" packages that have a ModelProvider class, and stores all their dependencies
+		// The dependencies are the ones from composer file or from "getDependencies" provider method
+		$packages = [];
+		foreach (InstalledVersions::getAllRawData()['versions'] as $package => $packageData) {
+			if (str_starts_with($package, 'model/')) {
+				$namespaceName = ucfirst(preg_replace_callback('/[-_](.)/', function ($matches) {
+					return strtoupper($matches[1]);
+				}, $package));
+
+				$className = '\\Model\\' . $namespaceName . '\\ModelProvider';
+				if (class_exists($className)) {
+					$composerFile = json_decode(file_get_contents($packageData['install_path'] . DIRECTORY_SEPARATOR . 'composer.json'));
+
+					$dependencies = [];
+					foreach ($composerFile['require'] as $dependentPackage => $dependentPackageVersion) {
+						if (str_starts_with($dependentPackage, 'model/'))
+							$dependencies[] = $dependentPackage;
+					}
+
+					foreach ($className::getDependencies() as $dependentPackage) {
+						if (!in_array($dependentPackage, $dependencies))
+							$dependencies[] = $dependentPackage;
+					}
+
+					$packages[$package] = [
+						'provider' => $className,
+						'dependencies' => $dependencies,
+					];
+				}
+			}
+		}
+
+		// I sort them by their respective dependencies (using topsort algorithm)
+		$sorter = new StringSort;
+
+		foreach ($packages as $package => $packageData) {
+			$dependencies = array_filter($packageData['dependencies'], function ($dependency) use ($packages) {
+				return array_key_exists($dependency, $packages);
+			});
+
+			$sorter->add($package, $dependencies);
+		}
+
+		$sorted = $sorter->sort();
+
+		// I then proceed, in order, to call the "realign" method
+		foreach ($sorted as $package)
+			$packages[$package]['provider']::realign();
 	}
 
 	/**
