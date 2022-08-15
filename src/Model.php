@@ -76,31 +76,33 @@ class Model
 		// First, I look for all the "model/" packages that have a ModelProvider class, and stores all their dependencies
 		// The dependencies are the ones from composer file or from "getDependencies" provider method
 		$packages = [];
-		foreach (InstalledVersions::getAllRawData()['versions'] as $package => $packageData) {
-			if (str_starts_with($package, 'model/')) {
-				$namespaceName = ucfirst(preg_replace_callback('/[-_](.)/', function ($matches) {
-					return strtoupper($matches[1]);
-				}, $package));
+		foreach (InstalledVersions::getAllRawData() as $installedVersions) {
+			foreach ($installedVersions['versions'] as $package => $packageData) {
+				if (str_starts_with($package, 'model/')) {
+					$namespaceName = ucfirst(preg_replace_callback('/[-_](.)/', function ($matches) {
+						return strtoupper($matches[1]);
+					}, $package));
 
-				$className = '\\Model\\' . $namespaceName . '\\ModelProvider';
-				if (class_exists($className)) {
-					$composerFile = json_decode(file_get_contents($packageData['install_path'] . DIRECTORY_SEPARATOR . 'composer.json'));
+					$className = '\\Model\\' . $namespaceName . '\\ModelProvider';
+					if (class_exists($className)) {
+						$composerFile = json_decode(file_get_contents($packageData['install_path'] . DIRECTORY_SEPARATOR . 'composer.json'));
 
-					$dependencies = [];
-					foreach ($composerFile['require'] as $dependentPackage => $dependentPackageVersion) {
-						if (str_starts_with($dependentPackage, 'model/'))
-							$dependencies[] = $dependentPackage;
+						$dependencies = [];
+						foreach ($composerFile['require'] as $dependentPackage => $dependentPackageVersion) {
+							if (str_starts_with($dependentPackage, 'model/'))
+								$dependencies[] = $dependentPackage;
+						}
+
+						foreach ($className::getDependencies() as $dependentPackage) {
+							if (!in_array($dependentPackage, $dependencies))
+								$dependencies[] = $dependentPackage;
+						}
+
+						$packages[$package] = [
+							'provider' => $className,
+							'dependencies' => $dependencies,
+						];
 					}
-
-					foreach ($className::getDependencies() as $dependentPackage) {
-						if (!in_array($dependentPackage, $dependencies))
-							$dependencies[] = $dependentPackage;
-					}
-
-					$packages[$package] = [
-						'provider' => $className,
-						'dependencies' => $dependencies,
-					];
 				}
 			}
 		}
