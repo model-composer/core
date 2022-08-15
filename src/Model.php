@@ -81,11 +81,11 @@ class Model
 				if (str_starts_with($package, 'model/')) {
 					$namespaceName = ucfirst(preg_replace_callback('/[-_](.)/', function ($matches) {
 						return strtoupper($matches[1]);
-					}, $package));
+					}, substr($package, 6)));
 
 					$className = '\\Model\\' . $namespaceName . '\\ModelProvider';
 					if (class_exists($className)) {
-						$composerFile = json_decode(file_get_contents($packageData['install_path'] . DIRECTORY_SEPARATOR . 'composer.json'));
+						$composerFile = json_decode(file_get_contents($packageData['install_path'] . DIRECTORY_SEPARATOR . 'composer.json'), true);
 
 						$dependencies = [];
 						foreach ($composerFile['require'] as $dependentPackage => $dependentPackageVersion) {
@@ -106,6 +106,9 @@ class Model
 				}
 			}
 		}
+
+		if (count($packages) === 0)
+			return;
 
 		// I sort them by their respective dependencies (using topsort algorithm)
 		$sorter = new StringSort;
