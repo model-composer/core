@@ -1,8 +1,8 @@
 <?php namespace Model\Core;
 
-use Composer\InstalledVersions;
 use MJS\TopSort\Implementations\StringSort;
 use Model\Config\Config;
+use Model\ProvidersFinder\Providers;
 
 class Model
 {
@@ -73,38 +73,27 @@ class Model
 
 	public static function realign(): void
 	{
-		// First, I look for all the "model/" packages that have a ModelProvider class, and stores all their dependencies
+		// First, I look for all the packages with a "Model" providers, and stores all their dependencies
 		// The dependencies are the ones from composer file or from "getDependencies" provider method
+		$packagesWithProvider = Providers::find('ModelProvider');
+
 		$packages = [];
-		foreach (InstalledVersions::getAllRawData() as $installedVersions) {
-			foreach ($installedVersions['versions'] as $package => $packageData) {
-				if (str_starts_with($package, 'model/')) {
-					$namespaceName = ucfirst(preg_replace_callback('/[-_](.)/', function ($matches) {
-						return strtoupper($matches[1]);
-					}, substr($package, 6)));
+		foreach ($packagesWithProvider as $package) {
+			$composerFile = json_decode(file_get_contents($package['packageData']['install_path'] . DIRECTORY_SEPARATOR . 'composer.json'), true);
 
-					$className = '\\Model\\' . $namespaceName . '\\ModelProvider';
-					if (class_exists($className)) {
-						$composerFile = json_decode(file_get_contents($packageData['install_path'] . DIRECTORY_SEPARATOR . 'composer.json'), true);
-
-						$dependencies = [];
-						foreach ($composerFile['require'] as $dependentPackage => $dependentPackageVersion) {
-							if (str_starts_with($dependentPackage, 'model/'))
-								$dependencies[] = $dependentPackage;
-						}
-
-						foreach ($className::getDependencies() as $dependentPackage) {
-							if (!in_array($dependentPackage, $dependencies))
-								$dependencies[] = $dependentPackage;
-						}
-
-						$packages[$package] = [
-							'provider' => $className,
-							'dependencies' => $dependencies,
-						];
-					}
-				}
+			$dependencies = [];
+			foreach ($composerFile['require'] as $dependentPackage => $dependentPackageVersion) {
+				if (str_starts_with($dependentPackage, 'model/'))
+					$dependencies[] = $dependentPackage;
 			}
+
+			foreach ($package['provider']::getDependencies() as $dependentPackage) {
+				if (!in_array($dependentPackage, $dependencies))
+					$dependencies[] = $dependentPackage;
+			}
+
+			$package['dependencies'] = $dependencies;
+			$packages[$package['package']] = $package;
 		}
 
 		if (count($packages) === 0)
@@ -113,12 +102,12 @@ class Model
 		// I sort them by their respective dependencies (using topsort algorithm)
 		$sorter = new StringSort;
 
-		foreach ($packages as $package => $packageData) {
-			$dependencies = array_filter($packageData['dependencies'], function ($dependency) use ($packages) {
+		foreach ($packages as $package) {
+			$dependencies = array_filter($package['dependencies'], function ($dependency) use ($packages) {
 				return array_key_exists($dependency, $packages);
 			});
 
-			$sorter->add($package, $dependencies);
+			$sorter->add($package['package'], $dependencies);
 		}
 
 		$sorted = $sorter->sort();
