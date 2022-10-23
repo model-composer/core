@@ -1,6 +1,5 @@
 <?php namespace Model\Core;
 
-use MJS\TopSort\Implementations\StringSort;
 use Model\Config\Config;
 use Model\ProvidersFinder\Providers;
 
@@ -73,48 +72,9 @@ class Model
 
 	public static function realign(): void
 	{
-		// First, I look for all the packages with a "Model" providers, and stores all their dependencies
-		// The dependencies are the ones from composer file or from "getDependencies" provider method
 		$packagesWithProvider = Providers::find('ModelProvider');
-
-		$packages = [];
-		foreach ($packagesWithProvider as $package) {
-			$composerFile = json_decode(file_get_contents($package['packageData']['install_path'] . DIRECTORY_SEPARATOR . 'composer.json'), true);
-
-			$dependencies = [];
-			foreach ($composerFile['require'] as $dependentPackage => $dependentPackageVersion) {
-				if (str_starts_with($dependentPackage, 'model/'))
-					$dependencies[] = $dependentPackage;
-			}
-
-			foreach ($package['provider']::getDependencies() as $dependentPackage) {
-				if (!in_array($dependentPackage, $dependencies))
-					$dependencies[] = $dependentPackage;
-			}
-
-			$package['dependencies'] = $dependencies;
-			$packages[$package['package']] = $package;
-		}
-
-		if (count($packages) === 0)
-			return;
-
-		// I sort them by their respective dependencies (using topsort algorithm)
-		$sorter = new StringSort;
-
-		foreach ($packages as $package) {
-			$dependencies = array_filter($package['dependencies'], function ($dependency) use ($packages) {
-				return array_key_exists($dependency, $packages);
-			});
-
-			$sorter->add($package['package'], $dependencies);
-		}
-
-		$sorted = $sorter->sort();
-
-		// I then proceed, in order, to call the "realign" method
-		foreach ($sorted as $package)
-			$packages[$package]['provider']::realign();
+		foreach ($packagesWithProvider as $package)
+			$package['provider']::realign();
 	}
 
 	/**

@@ -15,7 +15,6 @@
         "php": "^8.0",
         "ext-mbstring": "*",
         "model/config": "^0.6.0",
-        "marcj/topsort": "^2.0",
-        "model/providers-finder": "^0.1.0"
+        "model/providers-finder": "^0.2.0"
     }
 }

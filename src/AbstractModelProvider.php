@@ -1,13 +1,10 @@
 <?php namespace Model\Core;
 
-abstract class AbstractModelProvider
+use Model\ProvidersFinder\AbstractProvider;
+
+abstract class AbstractModelProvider extends AbstractProvider
 {
 	public static function realign(): void
 	{
-	}
-
-	public static function getDependencies(): array
-	{
-		return [];
 	}
 }
