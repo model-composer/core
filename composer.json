@@ -14,7 +14,7 @@
     "require": {
         "php": "^8.0",
         "ext-mbstring": "*",
-        "model/config": "^0.6.0",
+        "model/config": "^0.7.0",
         "model/providers-finder": "^0.2.0"
     }
 }

@@ -19,7 +19,7 @@ class Model
 
 		Config::loadEnv();
 
-		$config = self::getConfig();
+		$config = Config::get('core');
 
 		define('APP_NAME', $config['name']);
 		define('PATH', $config['path']);
@@ -140,32 +140,5 @@ class Model
 	public static function isCLI(): bool
 	{
 		return (php_sapi_name() == "cli");
-	}
-
-	public static function getConfig(): array
-	{
-		return Config::get('core', [
-			[
-				'version' => '0.2.0',
-				'migration' => function (array $config, string $env) {
-					if ($config) // Already existing
-						return $config;
-
-					return [
-						'name' => defined('APP_NAME') ? APP_NAME : '',
-						'path' => defined('PATH') ? PATH : '/',
-						'debug' => defined('MAIN_DEBUG_MODE') and (bool)MAIN_DEBUG_MODE,
-					];
-				},
-			],
-			[
-				'version' => '0.2.3',
-				'migration' => function (array $config, string $env) {
-					$config['force_https'] = defined('HTTPS') && (bool)HTTPS;
-					$config['force_www'] = defined('FORCE_WWW') && (bool)FORCE_WWW;
-					return $config;
-				},
-			],
-		]);
 	}
 }
