@@ -30,7 +30,7 @@ class Model
 		else
 			define('DEBUG_MODE', (int)($config['debug'] ?? false));
 
-		define('ZK_LOADING_ID', substr(md5(microtime()), 0, 16));
+		define('MODEL_LOADING_ID', substr(md5(microtime()), 0, 16));
 
 		if ((!empty($_SERVER['HTTPS']) and $_SERVER['HTTPS'] !== 'off') or ($_SERVER['SERVER_PORT'] ?? null) == 443)
 			define('HTTPS', 1);
