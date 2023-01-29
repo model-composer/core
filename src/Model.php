@@ -1,6 +1,8 @@
 <?php namespace Model\Core;
 
 use Model\Config\Config;
+use Model\Events\Events;
+use Model\Logger\Events\Error;
 use Model\ProvidersFinder\Providers;
 
 class Model
@@ -66,6 +68,13 @@ class Model
 
 		if (!isset($_SESSION))
 			$_SESSION = [];
+
+		set_error_handler(function (int $errno, string $errstr, ?string $errfile = null, ?int $errline = null) {
+			if (error_reporting() > 0)
+				Events::dispatch(new Error($errno, $errstr, $errfile, $errline));
+
+			return false;
+		});
 
 		self::$initialized = true;
 	}

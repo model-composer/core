@@ -15,6 +15,7 @@
         "php": "^8.0",
         "ext-mbstring": "*",
         "model/config": "^0.7.0",
-        "model/providers-finder": "^0.3.0"
+        "model/providers-finder": "^0.3.0",
+        "model/events": "^0.2.0"
     }
 }
