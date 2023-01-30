@@ -1,8 +1,8 @@
 <?php namespace Model\Core;
 
 use Model\Config\Config;
+use Model\Core\Events\Error;
 use Model\Events\Events;
-use Model\Logger\Events\Error;
 use Model\ProvidersFinder\Providers;
 
 class Model
