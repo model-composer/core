@@ -76,6 +76,10 @@ class Model
 			return false;
 		});
 
+		register_shutdown_function(function () {
+			self::terminate();
+		});
+
 		self::$initialized = true;
 	}
 
@@ -84,6 +88,13 @@ class Model
 		$packagesWithProvider = Providers::find('ModelProvider');
 		foreach ($packagesWithProvider as $package)
 			$package['provider']::realign();
+	}
+
+	public static function terminate(): void
+	{
+		$packagesWithProvider = Providers::find('ModelProvider');
+		foreach ($packagesWithProvider as $package)
+			$package['provider']::terminate();
 	}
 
 	/**

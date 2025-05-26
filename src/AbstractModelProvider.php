@@ -7,4 +7,8 @@ abstract class AbstractModelProvider extends AbstractProvider
 	public static function realign(): void
 	{
 	}
+
+	public static function terminate(): void
+	{
+	}
 }
