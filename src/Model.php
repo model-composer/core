@@ -27,7 +27,12 @@ class Model
 		define('PATH', $config['path']);
 		define('PATHBASE', substr(INCLUDE_PATH, 0, -strlen(PATH)));
 
-		if (isset($_COOKIE['ZKADMIN']) and $_COOKIE['ZKADMIN'] == '69')
+		$debugCookieSecret = $config['debug_cookie_secret'] ?? null;
+		if (
+			is_string($debugCookieSecret) and $debugCookieSecret !== ''
+			and isset($_COOKIE['ZKADMIN']) and is_string($_COOKIE['ZKADMIN'])
+			and hash_equals($debugCookieSecret, $_COOKIE['ZKADMIN'])
+		)
 			define('DEBUG_MODE', 1);
 		else
 			define('DEBUG_MODE', (int)($config['debug'] ?? false));

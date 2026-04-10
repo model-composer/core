@@ -28,6 +28,14 @@ class ConfigProvider extends AbstractConfigProvider
 					return $config;
 				},
 			],
+			[
+				'version' => '0.3.15',
+				'migration' => function (array $config, string $env) {
+					if (!array_key_exists('debug_cookie_secret', $config))
+						$config['debug_cookie_secret'] = bin2hex(random_bytes(32));
+					return $config;
+				},
+			],
 		];
 	}
 }
