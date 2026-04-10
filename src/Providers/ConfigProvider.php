@@ -36,6 +36,14 @@ class ConfigProvider extends AbstractConfigProvider
 					return $config;
 				},
 			],
+			[
+				'version' => '0.3.17',
+				'migration' => function (array $config, string $env) {
+					if (!array_key_exists('allowed_hosts', $config))
+						$config['allowed_hosts'] = [];
+					return $config;
+				},
+			],
 		];
 	}
 }

@@ -44,8 +44,23 @@ class Model
 		else
 			define('HTTPS', $config['force_https']);
 
+		$host = $_SERVER['HTTP_HOST'] ?? '';
+
+		if (!self::isCLI()) {
+			$allowedHosts = $config['allowed_hosts'] ?? [];
+			if ($allowedHosts) {
+				$hostWithoutPort = explode(':', $host, 2)[0];
+				if (!in_array($hostWithoutPort, $allowedHosts, true)) {
+					http_response_code(421);
+					header('Content-type: text/plain; charset=utf-8');
+					echo 'Misdirected request';
+					exit;
+				}
+			}
+		}
+
 		if (!defined('BASE_HOST'))
-			define('BASE_HOST', (HTTPS ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? ''));
+			define('BASE_HOST', (HTTPS ? 'https' : 'http') . '://' . $host);
 
 		error_reporting(E_ALL);
 		ini_set('display_errors', DEBUG_MODE);
@@ -55,12 +70,12 @@ class Model
 		if (!self::isCLI()) {
 			if (
 				$config['force_www']
-				and !str_starts_with($_SERVER['HTTP_HOST'], 'www.')
-				and !str_starts_with($_SERVER['HTTP_HOST'], 'localhost')
-				and !str_starts_with($_SERVER['HTTP_HOST'], '127.0.0.1')
+				and !str_starts_with($host, 'www.')
+				and !str_starts_with($host, 'localhost')
+				and !str_starts_with($host, '127.0.0.1')
 				and !str_starts_with($_SERVER['HTTP_USER_AGENT'] ?? '', 'curl')
 			) {
-				header('Location: http' . (HTTPS ? 's' : '') . '://www.' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+				header('Location: http' . (HTTPS ? 's' : '') . '://www.' . $host . $_SERVER['REQUEST_URI']);
 				exit;
 			}
 
