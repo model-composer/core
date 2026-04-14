@@ -46,4 +46,13 @@ class ConfigProvider extends AbstractConfigProvider
 			],
 		];
 	}
+
+	public static function templating(): array
+	{
+		return [
+			'name',
+			'debug_cookie_secret',
+			'allowed_hosts.*',
+		];
+	}
 }
