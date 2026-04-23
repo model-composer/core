@@ -75,6 +75,7 @@ class Model
 				and !str_starts_with($host, '127.0.0.1')
 				and !str_starts_with($_SERVER['HTTP_USER_AGENT'] ?? '', 'curl')
 			) {
+				http_response_code(301);
 				header('Location: http' . (HTTPS ? 's' : '') . '://www.' . $host . $_SERVER['REQUEST_URI']);
 				exit;
 			}
